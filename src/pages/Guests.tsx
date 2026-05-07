@@ -1,8 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Guest } from "../types";
 
 export default function Guests() {
   const [guests, setGuests] = useState<Guest[]>([]);
+
+  // LOAD saved guests
+  useEffect(() => {
+    const savedGuests = localStorage.getItem("guests");
+
+    if (savedGuests) {
+      setGuests(JSON.parse(savedGuests));
+    }
+  }, []);
+
+  // SAVE guests automatically
+  useEffect(() => {
+    localStorage.setItem("guests", JSON.stringify(guests));
+  }, [guests]);
 
   const addGuest = () => {
     const name = prompt("Enter name");
@@ -10,12 +24,20 @@ export default function Guests() {
 
     setGuests([
       ...guests,
-      { id: Date.now().toString(), name, rsvp: "pending" },
+      {
+        id: Date.now().toString(),
+        name,
+        rsvp: "pending",
+      },
     ]);
   };
 
   const updateRSVP = (id: string, rsvp: Guest["rsvp"]) => {
-    setGuests(guests.map(g => (g.id === id ? { ...g, rsvp } : g)));
+    setGuests(
+      guests.map((g) =>
+        g.id === id ? { ...g, rsvp } : g
+      )
+    );
   };
 
   return (
@@ -28,7 +50,7 @@ export default function Guests() {
       </button>
 
       <div className="grid gap-3">
-        {guests.map(g => (
+        {guests.map((g) => (
           <div
             key={g.id}
             className="bg-white p-4 rounded-2xl shadow flex justify-between items-center"
@@ -45,6 +67,7 @@ export default function Guests() {
               >
                 ✔
               </button>
+
               <button
                 onClick={() => updateRSVP(g.id, "not_going")}
                 className="px-3 py-1 bg-red-500 text-white rounded-lg"
